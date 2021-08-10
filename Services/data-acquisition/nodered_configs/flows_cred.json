@@ -1,0 +1,9 @@
+{
+    "90264499accf61ec": {
+        "user": "ENV_LOCALMQTTUSER",
+        "password": "ENV_LOCALMQTTPASS"
+    },
+    "7937a0d9c2c0645b": {
+        "token": "ENV_DOCKER_INFLUXDB_INIT_ADMIN_TOKEN"
+    }
+}

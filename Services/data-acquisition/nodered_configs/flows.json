@@ -1,0 +1,123 @@
+[
+    {
+        "id": "68113bb8300eb19e",
+        "type": "tab",
+        "label": "Log to Database",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "39feb9e2447cb037",
+        "type": "mqtt in",
+        "z": "68113bb8300eb19e",
+        "name": "Plantsite subscription",
+        "topic": "ENV_ROOT_TOPIC/#",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "90264499accf61ec",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "x": 210,
+        "y": 360,
+        "wires": [
+            [
+                "888c8378d93232c3"
+            ]
+        ]
+    },
+    {
+        "id": "888c8378d93232c3",
+        "type": "function",
+        "z": "68113bb8300eb19e",
+        "name": "Format for Database",
+        "func": "current_msg = msg;\n\nmsg = {};\nmsg.payload = {};\nmsg.measurement = current_msg.topic.split(\"/\").slice(0,-1).join('/');\nfield_name = current_msg.payload['metric name'];\nfield_value = current_msg.payload['value'];\n// field_value = Number.isInteger(field_value) ? field_value : +field.value\nmsg.payload[field_name] = +field_value;\n\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 360,
+        "wires": [
+            [
+                "73737df5e0d3f469",
+                "ad03f45d3ab87c77"
+            ]
+        ]
+    },
+    {
+        "id": "73737df5e0d3f469",
+        "type": "influxdb out",
+        "z": "68113bb8300eb19e",
+        "influxdb": "7937a0d9c2c0645b",
+        "name": "",
+        "measurement": "",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "s",
+        "retentionPolicyV18Flux": "",
+        "org": "ENV_DOCKER_INFLUXDB_INIT_ORG", 
+        "bucket": "ENV_DOCKER_INFLUXDB_INIT_BUCKET",
+        "x": 890,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "ad03f45d3ab87c77",
+        "type": "debug",
+        "z": "68113bb8300eb19e",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 930,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "90264499accf61ec",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "messaging",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "protocolVersion": "5",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "sessionExpiry": ""
+    },
+    {
+        "id": "7937a0d9c2c0645b",
+        "type": "influxdb",
+        "hostname": "influxdb",
+        "port": "8086",
+        "protocol": "http",
+        "database": "database",
+        "name": "",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "http://influxdb:8086",
+        "rejectUnauthorized": true
+    }
+]

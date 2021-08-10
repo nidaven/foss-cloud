@@ -1,0 +1,94 @@
+version: "3.7"
+
+networks: 
+    infrastructure:
+        driver: bridge
+
+services: 
+    messaging-hub:
+        container_name: messaging-engine
+        env_file: "./.env"
+        hostname: messaging 
+        networks: 
+            infrastructure: {}
+        build: 
+            context: ./messaging
+            args:     
+             - LOCALMQTTUSER
+             - LOCALMQTTPASS
+        ports: 
+            - "9001:9001"
+            - "9002:1883"
+    data-acquisition:
+        container_name: data-acquisition
+        env_file: "./.env"
+        hostname: data-acquisition
+        networks: 
+            infrastructure: {}
+        build:
+            context: ./data-acquisition
+            args: 
+               - LOCALMQTTUSER
+               - LOCALMQTTPASS
+               - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN
+               - DOCKER_INFLUXDB_INIT_ORG
+               - DOCKER_INFLUXDB_INIT_BUCKET
+               - ROOT_TOPIC
+               - MQTTHOSTNAME=messaging
+        ports: 
+            - "1880:1880"
+            - "9000:1880"
+    influxdatabase:
+        container_name: influxdatabase
+        #TODO decide if fill task is required   
+        # image: influxdb
+        build: 
+            context: ./database
+            args:
+               - DOCKER_INFLUXDB_INIT_MODE=setup
+               - DOCKER_INFLUXDB_INIT_USERNAME
+               - DOCKER_INFLUXDB_INIT_PASSWORD
+               - DOCKER_INFLUXDB_INIT_ORG
+               - DOCKER_INFLUXDB_INIT_BUCKET
+               - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN
+        env_file: "./.env"
+        hostname: influxdb
+        ports: 
+            - "8086:8086"
+            - "9006:8086"
+        networks: 
+            infrastructure: {}
+        volumes: 
+            - type: volume
+              source: influxdb-volume
+              target: /var/lib/influxdbv2
+        # environment: 
+        #     - DOCKER_INFLUXDB_INIT_MODE=setup
+        #     - DOCKER_INFLUXDB_INIT_USERNAME
+        #     - DOCKER_INFLUXDB_INIT_PASSWORD
+        #     - DOCKER_INFLUXDB_INIT_ORG
+        #     - DOCKER_INFLUXDB_INIT_BUCKET
+        #     - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN
+    visualisation:
+        container_name: visualisation
+        # image: grafana/grafana
+        build: 
+            context: ./visualisation
+        env_file: "./.env"
+        networks: 
+            infrastructure: {}
+        environment: 
+            - GF_SECURITY_ADMIN_USER
+            - GF_SECURITY_ADMIN_PASSWORD
+            - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN
+            - DOCKER_INFLUXDB_INIT_ORG
+            - DOCKER_INFLUXDB_INIT_BUCKET
+        volumes: 
+            - type: volume
+              source: grafana-volume
+              target: /var/lib/grafana
+        ports: 
+            - "9005:3000"
+volumes: 
+    influxdb-volume: {}
+    grafana-volume: {}
